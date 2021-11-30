@@ -1,14 +1,16 @@
 const express = require("express");
 const router = express.Router();
 const Game = require("../games/Games");
+const auth = require("../middleware/middleware");
 
-router.get("/", async (req, res) => {
+router.get("/", auth, async (req, res) => {
   const games = await Game.findAll();
+
   res.status(200);
-  res.json(games);
+  res.json({ user: req.loggedUser, games });
 });
 
-router.get("/:id", async (req, res) => {
+router.get("/:id", auth, async (req, res) => {
   let id = req.params.id;
   let game = "";
 
@@ -30,7 +32,7 @@ router.get("/:id", async (req, res) => {
   }
 });
 
-router.post("/", async (req, res) => {
+router.post("/", auth, async (reqauth, res) => {
   const { title, year, price } = req.body;
   let create;
   if (
@@ -50,7 +52,7 @@ router.post("/", async (req, res) => {
   }
 });
 
-router.delete("/:id", async (req, res) => {
+router.delete("/:id", auth, async (req, res) => {
   let id = req.params.id;
   let destroy;
   if (!isNaN(id)) {
@@ -70,7 +72,7 @@ router.delete("/:id", async (req, res) => {
   }
 });
 
-router.put("/:id", async (req, res) => {
+router.put("/:id", auth, async (req, res) => {
   let id = req.params.id;
 
   if (!isNaN(id)) {

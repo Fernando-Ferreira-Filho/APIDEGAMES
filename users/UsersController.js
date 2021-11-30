@@ -2,8 +2,9 @@ const express = require("express");
 const router = express.Router();
 const Users = require("./Users");
 const bcrypt = require("bcrypt");
+const auth = require("../middleware/middleware");
 
-router.get("/", async (req, res) => {
+router.get("/", auth, async (req, res) => {
   try {
     let user = await Users.findAll({ raw: true });
     user.forEach((element) => {
@@ -16,7 +17,7 @@ router.get("/", async (req, res) => {
   }
 });
 
-router.get("/:id", async (req, res) => {
+router.get("/:id", auth, async (req, res) => {
   let id = req.params.id;
 
   if (!isNaN(id)) {
@@ -38,7 +39,7 @@ router.get("/:id", async (req, res) => {
   }
 });
 
-router.post("/", async (req, res) => {
+router.post("/", auth, async (req, res) => {
   let { name, email, password } = req.body;
 
   name = name == undefined || name == null || name == "" ? false : name;
@@ -54,13 +55,15 @@ router.post("/", async (req, res) => {
     try {
       await Users.create({ name, email, password: hash });
       res.json({ name, email });
-    } catch (error) {}
+    } catch (error) {
+      res.sendStatus(400);
+    }
   } else {
     res.sendStatus(400);
   }
 });
 
-router.delete("/:id", async (req, res) => {
+router.delete("/:id", auth, async (req, res) => {
   let id = req.params.id;
 
   if (!isNaN(id)) {
@@ -75,7 +78,7 @@ router.delete("/:id", async (req, res) => {
   }
 });
 
-router.put("/", async (req, res) => {
+router.put("/", auth, async (req, res) => {
   let { name, email, password, oldPassword, id } = req.body;
 
   if (!isNaN(id)) {
@@ -111,6 +114,7 @@ router.put("/", async (req, res) => {
   } else {
     res.sendStatus(400);
   }
+
   async function alteraUser(password) {
     let salt = bcrypt.genSaltSync(10);
     let hash = bcrypt.hashSync(password, salt);
